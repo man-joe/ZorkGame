@@ -12,6 +12,8 @@ public class ZorkGame {
     static Random rnd = new Random();
     static Scanner sc = new Scanner(System.in);
     static String userInput = "";
+    static ArrayList<Integer> roomNumsVisited = new ArrayList<>();
+    static boolean foundSecret = false;
 
     static HashMap<Integer, ArrayList<String>> wholeMap = new HashMap<Integer, ArrayList<String>>(){
         private static final long serialVersionUID = 1L;
@@ -21,7 +23,7 @@ public class ZorkGame {
             put(3, new ArrayList<String>(Arrays.asList("north(n)","east(e)","back(b)")));
             put(4, new ArrayList<String>(Arrays.asList("north(n)","west(w)","back(b)")));
             put(5, new ArrayList<String>(Arrays.asList("south(s)","back(b)")));
-            put(6, new ArrayList<String>(Arrays.asList("north(n)","east(e)","back(b)")));
+            put(6, new ArrayList<String>(Arrays.asList("east(e)","back(b)")));
             put(7, new ArrayList<String>(Arrays.asList("west(w)","south(s)","back(b)")));
             put(8, new ArrayList<String>(Arrays.asList("south(s)","back(b)")));
         }};
@@ -41,15 +43,17 @@ public class ZorkGame {
         numRoomVisited++;
     }
 
-    private static void evaluateRoom(int roomNum, String userInput) {
+    private static void evaluateRoom(String userInput) {
         int temp = currRoomNum;
 
-        switch (roomNum) {
-            case 1:
+        
+
+        switch (currRoomNum) {
+            case 1: // Foyer directional room choices
                 if(userInput.equalsIgnoreCase("n"))
                     currRoomNum = 2;
                 break;
-            case 2:
+            case 2: // Front Room directional room choices
                 if(userInput.equalsIgnoreCase("w"))
                     currRoomNum = 3;
                 else if(userInput.equalsIgnoreCase("e"))
@@ -57,19 +61,42 @@ public class ZorkGame {
                 else if(userInput.equalsIgnoreCase("s"))
                     currRoomNum = 1;
                 break;
-            case 3:
+            case 3: // Library directional room choices
                 if(userInput.equalsIgnoreCase("n"))
                     currRoomNum = 5;
                 else if(userInput.equalsIgnoreCase("w"))
                     currRoomNum = 2;
                 break;
-            case 4:
+            case 4: // Kitchen directional room choices
                 if(userInput.equalsIgnoreCase("n"))
                     currRoomNum = 7;
                 else if(userInput.equalsIgnoreCase("w"))
                     currRoomNum = 2;
-
+                break;
+            case 5: // Dining room directional room choices
+                if(userInput.equalsIgnoreCase("s"))
+                    currRoomNum = 3;
+                break;
+            case 6: // Vault directional room choices
+                if(userInput.equalsIgnoreCase("sr"))
+                    currRoomNum = 8;
+                else if(userInput.equalsIgnoreCase("e"))
+                    currRoomNum = 7;
+                break;
+            case 7:
+                if(userInput.equalsIgnoreCase("w"))
+                    currRoomNum = 6;
+                else if(userInput.equalsIgnoreCase("s"))
+                    currRoomNum = 4;
+                break;
+            case 8:
+                if (userInput.equalsIgnoreCase("s"))
+                    currRoomNum = 6;
+                break;
         }
+
+        if(!roomNumsVisited.contains(currRoomNum))
+            roomNumsVisited.add(currRoomNum);
 
         if(userInput.equalsIgnoreCase("b"))
             currRoomNum = prevRoomNum;
@@ -93,23 +120,65 @@ public class ZorkGame {
         System.out.println("You can go: " + wholeMap.get(3).toString());
     }
 
-    public static void main(String[] args) {
-        HashMap<Integer, ArrayList<String>> currMap = new HashMap<>();
+    private static void kitchen() {
+        System.out.println("Welcome to the Kitchen!");
+        System.out.println("There are bats...");
 
-        boolean toExit = false;
+        System.out.println("You can go: " + wholeMap.get(4).toString());
+    }
+
+    private static void diningRoom() {
+        System.out.println("Welcome to the Dining Room!");
+        System.out.println("There is dust an empty box...");
+
+        System.out.println("You can go: " + wholeMap.get(5).toString());
+    }
+
+    private static void vault() {
+        System.out.println("Welcome to the Vault!");
+        System.out.println("There are 3 walking skeletons...");
+
+        if(rnd.nextInt(4) == 0 && foundSecret == false){ //25% chance of finding secret room
+            System.out.println("And a mysterious door appears!!!!");
+            wholeMap.get(6).add("secret room(sr)");
+        }
+
+        System.out.println("You can go: " + wholeMap.get(6).toString());
+    }
+
+    private static void parlor() {
+        System.out.println("Welcome to the Parlor!");
+        System.out.println("There is a treasure chest...");
+
+        System.out.println("You can go: " + wholeMap.get(7).toString());
+    }
+
+    private static void secretRoom() {
+        System.out.println("Welcome to the Secret Room!");
+        System.out.println("There are piles of gold...");
+
+        System.out.println("You can go: " + wholeMap.get(8).toString());
+    }
+
+    public static void main(String[] args) {
+        boolean enterOrNot = false;
 
         System.out.println("Welcome to Zork!");
-        foyer();
-
-        currRoomNum = 1;
-
-
-        while(true) {
+        
+        System.out.println("Do you want to enter?(y/n):");
+        userInput = sc.nextLine();
+        if(userInput.equalsIgnoreCase("y")){
+            foyer();
+            currRoomNum = 1; 
+            roomNumsVisited.add(1);
+            enterOrNot = true; 
+        }
+        while(enterOrNot) {
 
             System.out.print("\nEnter a direction or Q to quit: ");
             userInput = sc.nextLine();
 
-            evaluateRoom(currRoomNum,userInput);
+            evaluateRoom(userInput);
 
             if(userInput.equalsIgnoreCase("q"))
                 break;
@@ -125,23 +194,26 @@ public class ZorkGame {
                     library();
                     break;
                 case 4:
-                    foyer(userInput);
+                    kitchen();
                     break;
                 case 5:
-                    foyer(userInput);
+                    diningRoom();
                     break;
                 case 6:
-                    foyer(userInput);
+                    vault();
                     break;
                 case 7:
-                    foyer(userInput);
+                    parlor();
                     break;
                 case 8:
-                    foyer(userInput);
+                    secretRoom();
                     break;
             }
-
         }
 
+        System.out.println("Thanks for Playing Zork!");
+        System.out.println("You have visited " + roomNumsVisited.size() + " rooms.");
+        if(rnd.nextInt(4) == 0) // 25% this will happen
+            System.out.println("You feel a strange presence as you leave...");
     }
 }
